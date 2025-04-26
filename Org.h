@@ -19,21 +19,13 @@ class Organism {
     double GetPoints() const {return points;}
     int GetSpecies() const {return species;}
 
-    void Process(double points_to_add=100.0) {
+    virtual void Process(double points_to_add=100.0) {
         AddPoints(points_to_add);
     }
 
-    emp::Ptr<Organism> CheckReproduction() {
-        if (points >= 1000.0) {
-            emp::Ptr<Organism> offspring = new Organism(*this);
-            offspring->SetPoints(0.0); // Reset offspring points to 0
-            
-            // Parent pays the cost of reproduction
-            points -= 1000.0;
-            
-            return offspring;
-        }
-        return nullptr; // Return nullptr if no reproduction occurs
+    virtual void ProcessWithEnvironment(const std::array<int, 3>& neighbors, double points_to_add=100.0) {
+        // Default behavior just adds points
+        AddPoints(points_to_add);
     }
 };
 #endif

@@ -1,19 +1,11 @@
-// will be species 0
-// grows fast on its own if there is green space next to it?
-// would it need a grass class, or would it be able to just identify the green space?
-// grows faster if more green space is next to it
-
 #ifndef MOUSE_H
 #define MOUSE_H
 
 #include "Org.h"
 #include "World.h"
 
+// Mouse is species 0
 class Mouse : public Organism {
-    private:
-        double points;
-        emp::Ptr<emp::Random> random; // is this needed? copilot
-        int species;
     public:
         Mouse(emp::Ptr<emp::Random> _random, double _points=0.0, int _species=0) :
             Organism(_random, _points, _species) {;}
@@ -22,24 +14,38 @@ class Mouse : public Organism {
             AddPoints(points_to_add);
         }
 
-        emp::Ptr<Mouse> CheckReproduction() {
-            if (GetPoints() >= 1000.0) {
-                emp::Ptr<Mouse> offspring = new Mouse(*this);
-                offspring->SetPoints(0.0); // Reset offspring points to 0
-
-                // Parent pays the cost of reproduction
-                SetPoints(GetPoints() - 1000.0);
-
-                return offspring;
-            }
-            return nullptr; // Return nullptr if no reproduction occurs
-        }
-
         // Function to grow faster if there is green space next to it
-        void eatGrass() {
-            // Depending on how much grass is next to it, it will grow faster
+        void EatGrass(OrgWorld& world, size_t pos) {
+            // Check how much grass is nearby
+            auto neighbors = world.CheckNeighbors(pos);
+            int grass_count = neighbors[2]; // Index 2 is grass count
+            
+            // The more grass, the more points gained
+            if (grass_count > 0) {
+                double grass_bonus = grass_count * 20.0; // More points per grass
+                AddPoints(grass_bonus);
+            } else {
+                // If no grass, mice still survive but don't gain much
+                AddPoints(5.0);
+            }
+            
+            if (GetPoints() >= 800.0) {  
+                emp::Ptr<Mouse> offspring = new Mouse(*this);
+                offspring->SetPoints(300.0);
+                
+                // Parent keeps some points
+                SetPoints(GetPoints() - 500.0);
+                
+                // Add offspring to a nearby cell if possible
+                emp::vector<size_t> neighbors = world.GetValidNeighborOrgIDs(pos);
+                for (size_t neighbor_pos : neighbors) {
+                    if (!world.IsOccupied(neighbor_pos)) {
+                        world.AddOrgAt(offspring, neighbor_pos);
+                        break;
+                    }
+                }
+            }
         }
 };
-
 
 #endif

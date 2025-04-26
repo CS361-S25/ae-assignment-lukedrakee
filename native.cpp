@@ -3,6 +3,8 @@
 
 #include "World.h"
 #include "Org.h"
+#include "Mouse.h"
+#include "Owl.h"
 
 // You run this from going "./compile-run-native.sh" in the terminal.
 
@@ -10,10 +12,10 @@ int main() {
     emp::Random random(5);  
     OrgWorld world(random);
     
-    Organism* new_org1 = new Organism(&random, 0.0, 0); // Create organism of species 0
+    Mouse* new_org1 = new Mouse(&random, 0.0, 0); // Create organism of species 0
     world.Inject(*new_org1);
     
-    Organism* new_org2 = new Organism(&random, 0.0, 1); // Create organism of species 1
+    Owl* new_org2 = new Owl(&random, 0.0, 1); // Create organism of species 1
     world.Inject(*new_org2);
     
     // Resize the world to a 10x10 grid
