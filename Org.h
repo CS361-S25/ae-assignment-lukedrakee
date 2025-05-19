@@ -5,7 +5,7 @@
 #include "emp/tools/string_utils.hpp"
 
 class Organism {
-    private:
+    protected: // change so that owl can access random variable for hunting
         double points;
         emp::Ptr<emp::Random> random;
         int species;

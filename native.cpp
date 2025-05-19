@@ -30,13 +30,6 @@ int main() {
         std::cout << "Update " << i << std::endl;
         world.Update();
         std::cout << "Population after update " << i << ": " << world.GetNumOrgs() << std::endl;
-        
-        // Movement test
-        /*for (int j = 0; j < world.GetSize(); j++) {
-            if (world.IsOccupied(j) && random.P(0.5)) {
-                world.MoveOrganism(j);
-            }
-        }*/
     }
     
     return 0;

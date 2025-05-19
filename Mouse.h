@@ -22,22 +22,22 @@ class Mouse : public Organism {
             
             // The more grass, the more points gained
             if (grass_count > 0) {
-                double grass_bonus = grass_count * 20.0; // More points per grass
+                double grass_bonus = grass_count * 75.0;
                 AddPoints(grass_bonus);
-            } else {
-                // If no grass, mice still survive but don't gain much
-                AddPoints(5.0);
             }
+
+            // Mice use energy each round for existing
+            AddPoints(-50.0);
             
             if (GetPoints() >= 800.0) {  
                 emp::Ptr<Mouse> offspring = new Mouse(*this);
                 offspring->SetPoints(300.0);
                 
                 // Parent keeps some points
-                SetPoints(GetPoints() - 500.0);
+                SetPoints(GetPoints() - 700.0);
                 
-                // Add offspring to a nearby cell if possible
-                emp::vector<size_t> neighbors = world.GetValidNeighborOrgIDs(pos);
+                // Add offspring to a nearby cell if possible using direct coordinate calculation
+                std::vector<size_t> neighbors = world.GetNeighborPositions(pos, 20, 20); // Use grid dimensions
                 for (size_t neighbor_pos : neighbors) {
                     if (!world.IsOccupied(neighbor_pos)) {
                         world.AddOrgAt(offspring, neighbor_pos);

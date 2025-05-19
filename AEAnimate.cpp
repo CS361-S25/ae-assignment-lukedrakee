@@ -18,16 +18,13 @@ class AEAnimator : public emp::web::Animate {
     const double height{num_h_boxes * RECT_SIDE};
 
     emp::web::Canvas canvas{width, height, "canvas"};
-    emp::Random random_generator{7}; // Random seed
+    emp::Random random_generator{5}; // Random seed
     OrgWorld world{random_generator};
     
     // Colors for visualization
     std::string grass_color = "green";
     std::string mouse_color = "gray";
     std::string owl_color = "brown";
-    
-    // Ecological parameters for balancing
-    double grass_growth_rate = 0.15;  // Probability of new grass growing
 
 public:
 
@@ -67,7 +64,7 @@ public:
         }
         
         // Add owls (fewer than mice)
-        for (int i = 0; i < num_w_boxes * num_h_boxes / 40; i++) {  // Even fewer owls
+        for (int i = 0; i < num_w_boxes * num_h_boxes / 40; i++) {
             size_t owl_pos = random_generator.GetUInt(num_w_boxes * num_h_boxes);
             if (!world.IsOccupied(owl_pos)) {
                 emp::Ptr<Owl> new_owl = new Owl(&random_generator, 500.0, 1);
@@ -86,8 +83,6 @@ public:
                 
                 if (world.IsOccupied(pos)) {
                     int species = world.GetOrg(pos).GetSpecies();
-                    // std::string color = (species == 0) ? mouse_color : owl_color;
-                    // canvas.Rect(x * RECT_SIDE, y * RECT_SIDE, RECT_SIDE, RECT_SIDE, color, "black");
                     if (species == 0) {
                         canvas.Rect(x * RECT_SIDE, y * RECT_SIDE, RECT_SIDE, RECT_SIDE, mouse_color, "black");
                     } else { // species == 1, so owl
@@ -101,42 +96,6 @@ public:
     }
 
     void UpdateEcology() {
-        // Process each organism - update is handled differently now
-        // world.Update();
-        
-        // Count population for balancing
-        int mouse_count = 0;
-        int owl_count = 0;
-        for (size_t i = 0; i < world.GetSize(); i++) {
-            if (world.IsOccupied(i)) {
-                int species = world.GetOrg(i).GetSpecies();
-                if (species == 0) mouse_count++;
-                else if (species == 1) owl_count++;
-            }
-        }
-        
-        // Spontaneous mouse creation if population is too low
-        if (mouse_count < 5) {
-            for (int i = 0; i < 10; i++) {
-                size_t pos = random_generator.GetUInt(world.GetSize());
-                if (!world.IsOccupied(pos)) {
-                    emp::Ptr<Mouse> new_mouse = new Mouse(&random_generator, 500.0, 0);
-                    world.AddOrgAt(new_mouse, pos);
-                }
-            }
-        }
-        
-        // Ensure owls don't overpopulate
-        double owl_mouse_ratio = (mouse_count > 0) ? (double)owl_count / mouse_count : 999;
-        if (owl_mouse_ratio > 0.3) {  // If owls are more than 30% of mice population
-            // Make owls lose points faster
-            for (size_t i = 0; i < world.GetSize(); i++) {
-                if (world.IsOccupied(i) && world.GetOrg(i).GetSpecies() == 1) {
-                    world.GetOrg(i).AddPoints(-30.0 * owl_mouse_ratio);
-                }
-            }
-        }
-        
         // Handle owl predation and mouse grass eating
         emp::vector<size_t> action_schedule = emp::GetPermutation(random_generator, world.GetSize());
         for (size_t i : action_schedule) {
@@ -169,22 +128,6 @@ public:
         for (size_t i = 0; i < world.GetSize(); i++) {
             if (world.IsOccupied(i) && random_generator.P(0.2)) {
                 world.MoveOrganism(i);
-            }
-        }
-        
-        // Natural growth of mice in empty cells (mouse reproduction)
-        if (mouse_count < 100) {  // Only if mice aren't overpopulated
-            for (size_t i = 0; i < world.GetSize(); i++) {
-                if (!world.IsOccupied(i) && random_generator.P(0.03)) {
-                    auto neighbors = world.CheckNeighbors(i);
-                    int mouse_count_local = neighbors[0];
-                    
-                    // Mice can spontaneously appear if there are mice nearby
-                    if (mouse_count_local > 0) {
-                        emp::Ptr<Mouse> new_mouse = new Mouse(&random_generator, 400.0, 0);
-                        world.AddOrgAt(new_mouse, i);
-                    }
-                }
             }
         }
     }

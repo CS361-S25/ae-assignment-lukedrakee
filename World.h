@@ -65,7 +65,7 @@ class OrgWorld : public emp::World<Organism> {
         emp::vector<size_t> neighbor_ids = GetValidNeighborOrgIDs(i);
         int mouse_count = 0;
         int owl_count = 0;
-        int grass_count = neighbor_ids.size(); // Start with all cells as grass
+        int grass_count = 8; // Start with all cells as grass (8 neighbors)
         
         for (size_t j : neighbor_ids) {
             if (IsOccupied(j)) {
@@ -81,6 +81,28 @@ class OrgWorld : public emp::World<Organism> {
         
         std::array<int, 3> output = {mouse_count, owl_count, grass_count};
         return output;
+    }
+
+    // Helper function as previous function didn't properly work.
+    std::vector<size_t> GetNeighborPositions(size_t pos, int width, int height) {
+        std::vector<size_t> neighbors;
+        int x = pos % width;
+        int y = pos / width;
+        
+        // Check all 8 neighbors with toroidal wrapping
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if (dx == 0 && dy == 0) continue; // Skip center position
+                
+                // Handle toroidal wrapping
+                int nx = (x + dx + width) % width;
+                int ny = (y + dy + height) % height;
+                
+                size_t neighbor_pos = ny * width + nx;
+                neighbors.push_back(neighbor_pos);
+            }
+        }
+        return neighbors;
     }
 };
 #endif
